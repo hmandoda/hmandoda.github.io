@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Lowville Golf Club</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.9.2/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.9.2/mapbox-gl.js"></script>
+<script src='https://unpkg.com/@turf/turf@6/turf.min.js'></script>
+<style>
+body { margin: 0; padding: 0; }
+#map { position: absolute; top: 8%; bottom: 0; width: 100%; }
+.distance-container {
+position: absolute;
+top: 10px;
+left: 10px;
+z-index: 1;
+}
+ 
+.distance-container > * {
+background-color: rgba(0, 0, 0, 0.5);
+color: #fff;
+font-size: 11px;
+line-height: 18px;
+display: block;
+margin: 0;
+padding: 5px 10px;
+border-radius: 3px;
+}
+
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div id="distance" class="distance-container"></div>
+<h5>Planning Tool: You can measure distances, in meters and yards, by clicking on the map and then clicking elsewhere. The hole buttons will take you to each hole so you can get a view from the tee deck. Apres Golf will show you restuarants in the area</h5>
+<button id="hole1">Hole1</button><button id="hole2">Hole2</button><button id="hole3">Hole3</button><button id="hole4">Hole4</button><button id="hole5">Hole5</button><button id="hole6">Hole6</button><button id="hole7">Hole7</button><button id="hole8">Hole8</button><button id="hole9">Hole9</button><button id="hole10">Hole10</button><button id="hole11">Hole11</button><button id="hole12">Hole12</button><button id="hole13">Hole13</button><button id="hole14">Hole14</button><button id="hole15">Hole15</button><button id="hole16">Hole16</button><button id="hole17">Hole17</button><button id="hole18">Hole18</button><button id="apres">Apres Golf</button>
+<br>
+<script>
+	mapboxgl.accessToken = 'pk.eyJ1IjoiaG1hbmRvZGEiLCJhIjoiY2w0ZDMwcGFoMDRsazNwbW5wZnExcW9wdiJ9.nGBmWOH7dIqcdxV948u7YA';
+
+	
+	const hole1 = {
+			center: [-79.901339, 43.422679],
+			zoom: 19,
+			pitch: 85.00,
+			bearing: 165.60
+			};
+    const hole2 = {
+			center: [-79.899536, 43.420592],
+			zoom: 19,
+			pitch: 85.00,
+			bearing: -15.20
+			};
+    const hole3 = {
+			center: [-79.901943, 43.422844],
+			zoom: 19,
+			pitch: 85.00,
+			bearing: 172.00
+			};
+    const hole4 = {
+			center: [-79.903144, 43.420743],
+			zoom: 19,
+			pitch: 85.00,
+			bearing: -140.72
+			};
+    const hole5 = {
+			center: [-79.906184, 43.418332],
+			zoom: 19,
+			pitch: 85.00,
+			bearing: 15.28
+			};
+    const hole6 = {
+			center: [-79.904903, 43.419596],
+			zoom: 19,
+			pitch: 85.00,
+			bearing: 27.28
+			};
+    const hole7 = {
+			center: [-79.902689, 43.421353],
+			zoom: 19,
+			pitch: 85.00,
+			bearing: 125.68
+			};
+    const hole8 = {
+			center: [-79.899266, 43.419743],
+			zoom: 19,
+			pitch: 85.00,
+			bearing: 49.68
+			};
+    const hole9 = {
+			center: [-79.899080, 43.421711],
+			zoom: 19,
+			pitch: 85.00,
+			bearing: -27.06
+			};
+    const hole10 = {
+			center: [-79.901681, 43.424767],
+			zoom: 19,
+			pitch: 85.00,
+			bearing: 53.74
+			};
+    const hole11 = {
+			center: [-79.900073, 43.425990],
+			zoom: 19,
+			pitch: 85.00,
+			bearing: -153.46
+			};
+    const hole12 = {
+			center: [-79.899423, 43.423473],
+			zoom: 19,
+			pitch: 85.00,
+			bearing: 131.34
+			};
+    const hole13 = {
+			center: [-79.896877, 43.421320],
+			zoom: 19,
+			pitch: 85.00,
+			bearing: 46.57
+			};
+    const hole14 = {
+			center: [-79.896782, 43.422674],
+			zoom: 19,
+			pitch: 85.00,
+			bearing: -36.66
+			};
+    const hole15 = {
+			center: [-79.897687, 43.425646],
+			zoom: 19,
+			pitch: 85.00,
+			bearing: 32.94
+			};
+    const hole16 = {
+			center: [-79.896593, 43.425895],
+			zoom: 19,
+			pitch: 85.00,
+			bearing: 144.14
+			};
+    const hole17 = {
+			center: [-79.895959, 43.423129],
+			zoom: 19,
+			pitch: 85.00,
+			bearing: -26.26
+			};
+    const hole18 = {
+			center: [-79.898549, 43.425918],
+			zoom: 19,
+			pitch: 85.00,
+			bearing: -135.84
+			};
+	
+	const map = new mapboxgl.Map({
+        container: 'map', // container ID
+        style: 'mapbox://styles/hmandoda/cl6l0vrsj001016n22ivejsg3', // style URL
+        center: [-79.90173, 43.424141], // starting position [lng, lat]
+        zoom: 17, // starting zoom
+		    bearing: 163.20,
+        pitch: 76.37
+    });
+
+    map.on('style.load', () => {
+        map.setFog({}); // Set the default atmosphere style
+        map.setLayoutProperty('overpassnearlowville','visibility','none')
+	// Add geolocate control to the map.
+	map.addControl(
+	new mapboxgl.GeolocateControl({
+	positionOptions: {
+	enableHighAccuracy: true
+		},
+	showAccuracyCircle: false,
+	// When active the map will receive updates to the device's location as it changes.
+	trackUserLocation: true,
+	// Draw an arrow next to the location dot to indicate which direction the device is heading.
+	showUserHeading: true
+	})
+	);
+	document.getElementById('hole1').addEventListener('click', () => {
+	map.flyTo({
+	...hole1, // Fly to the selected target
+	duration: 3000, // Animate over 12 seconds
+	essential: true // This animation is considered essential with
+	//respect to prefers-reduced-motion
+		});
+	});
+	document.getElementById('hole2').addEventListener('click', () => {
+	map.flyTo({
+	...hole2, // Fly to the selected target
+	duration: 3000, // Animate over 12 seconds
+	essential: true // This animation is considered essential with
+	//respect to prefers-reduced-motion
+		});
+	});
+	document.getElementById('hole3').addEventListener('click', () => {
+	map.flyTo({
+	...hole3, // Fly to the selected target
+	duration: 3000, // Animate over 12 seconds
+	essential: true // This animation is considered essential with
+	//respect to prefers-reduced-motion
+		});
+	});
+	document.getElementById('hole4').addEventListener('click', () => {
+	map.flyTo({
+	...hole4, // Fly to the selected target
+	duration: 3000, // Animate over 12 seconds
+	essential: true // This animation is considered essential with
+	//respect to prefers-reduced-motion
+		});
+	});
+	document.getElementById('hole5').addEventListener('click', () => {
+	map.flyTo({
+	...hole5, // Fly to the selected target
+	duration: 3000, // Animate over 12 seconds
+	essential: true // This animation is considered essential with
+	//respect to prefers-reduced-motion
+		});
+	});
+	document.getElementById('hole6').addEventListener('click', () => {
+	map.flyTo({
+	...hole6, // Fly to the selected target
+	duration: 3000, // Animate over 12 seconds
+	essential: true // This animation is considered essential with
+	//respect to prefers-reduced-motion
+		});
+	});
+	document.getElementById('hole7').addEventListener('click', () => {
+	map.flyTo({
+	...hole7, // Fly to the selected target
+	duration: 3000, // Animate over 12 seconds
+	essential: true // This animation is considered essential with
+	//respect to prefers-reduced-motion
+		});
+	});
+	document.getElementById('hole8').addEventListener('click', () => {
+	map.flyTo({
+	...hole8, // Fly to the selected target
+	duration: 3000, // Animate over 12 seconds
+	essential: true // This animation is considered essential with
+	//respect to prefers-reduced-motion
+		});
+	});
+	document.getElementById('hole9').addEventListener('click', () => {
+	map.flyTo({
+	...hole9, // Fly to the selected target
+	duration: 3000, // Animate over 12 seconds
+	essential: true // This animation is considered essential with
+	//respect to prefers-reduced-motion
+		});
+	});
+	document.getElementById('hole10').addEventListener('click', () => {
+	map.flyTo({
+	...hole10, // Fly to the selected target
+	duration: 3000, // Animate over 12 seconds
+	essential: true // This animation is considered essential with
+	//respect to prefers-reduced-motion
+		});
+	});
+	document.getElementById('hole11').addEventListener('click', () => {
+	map.flyTo({
+	...hole11, // Fly to the selected target
+	duration: 3000, // Animate over 12 seconds
+	essential: true // This animation is considered essential with
+	//respect to prefers-reduced-motion
+		});
+	});
+	document.getElementById('hole12').addEventListener('click', () => {
+	map.flyTo({
+	...hole12, // Fly to the selected target
+	duration: 3000, // Animate over 12 seconds
+	essential: true // This animation is considered essential with
+	//respect to prefers-reduced-motion
+		});
+	});
+	document.getElementById('hole13').addEventListener('click', () => {
+	map.flyTo({
+	...hole13, // Fly to the selected target
+	duration: 3000, // Animate over 12 seconds
+	essential: true // This animation is considered essential with
+	//respect to prefers-reduced-motion
+		});
+	});
+	document.getElementById('hole14').addEventListener('click', () => {
+	map.flyTo({
+	...hole14, // Fly to the selected target
+	duration: 3000, // Animate over 12 seconds
+	essential: true // This animation is considered essential with
+	//respect to prefers-reduced-motion
+		});
+	});
+	document.getElementById('hole15').addEventListener('click', () => {
+	map.flyTo({
+	...hole15, // Fly to the selected target
+	duration: 3000, // Animate over 12 seconds
+	essential: true // This animation is considered essential with
+	//respect to prefers-reduced-motion
+		});
+	});
+	document.getElementById('hole16').addEventListener('click', () => {
+	map.flyTo({
+	...hole16, // Fly to the selected target
+	duration: 3000, // Animate over 12 seconds
+	essential: true // This animation is considered essential with
+	//respect to prefers-reduced-motion
+		});
+	});
+	document.getElementById('hole17').addEventListener('click', () => {
+	map.flyTo({
+	...hole17, // Fly to the selected target
+	duration: 3000, // Animate over 12 seconds
+	essential: true // This animation is considered essential with
+	//respect to prefers-reduced-motion
+		});
+	});
+	document.getElementById('hole18').addEventListener('click', () => {
+	map.flyTo({
+	...hole18, // Fly to the selected target
+	duration: 3000, // Animate over 12 seconds
+	essential: true // This animation is considered essential with
+	//respect to prefers-reduced-motion
+		});
+	});
+  document.getElementById('apres').addEventListener('click', () => {
+    map.setZoom(12);
+    const vis = map.getLayoutProperty ('overpassnearlowville','visibility');
+    if (vis === 'none') {
+      map.setLayoutProperty('overpassnearlowville','visibility','visible');
+    } else {map.setLayoutProperty('overpassnearlowville','visibility','none');}
+  }
+  );
+
+
+const distanceContainer = document.getElementById('distance');
+ 
+// GeoJSON object to hold our measurement features
+const geojson = {
+'type': 'FeatureCollection',
+'features': []
+};
+ 
+// Used to draw a line between points
+const linestring = {
+'type': 'Feature',
+'geometry': {
+'type': 'LineString',
+'coordinates': []
+}
+};
+ 
+map.on('load', () => {
+map.addSource('geojson', {
+'type': 'geojson',
+'data': geojson
+});
+ 
+// Add styles to the map
+map.addLayer({
+id: 'measure-points',
+type: 'circle',
+source: 'geojson',
+paint: {
+'circle-radius': 5,
+'circle-color': '#000'
+},
+filter: ['in', '$type', 'Point']
+});
+map.addLayer({
+id: 'measure-lines',
+type: 'line',
+source: 'geojson',
+layout: {
+'line-cap': 'round',
+'line-join': 'round'
+},
+paint: {
+'line-color': '#000',
+'line-width': 2.5
+},
+filter: ['in', '$type', 'LineString']
+});
+ 
+map.on('click', (e) => {
+const features = map.queryRenderedFeatures(e.point, {
+layers: ['measure-points']
+});
+ 
+// Remove the linestring from the group
+// so we can redraw it based on the points collection.
+if (geojson.features.length > 1) geojson.features.pop();
+ 
+// Clear the distance container to populate it with a new value.
+distanceContainer.innerHTML = '';
+ 
+// If a feature was clicked, remove it from the map.
+if (features.length) {
+const id = features[0].properties.id;
+geojson.features = geojson.features.filter(
+(point) => point.properties.id !== id
+);
+} else {
+const point = {
+'type': 'Feature',
+'geometry': {
+'type': 'Point',
+'coordinates': [e.lngLat.lng, e.lngLat.lat]
+},
+'properties': {
+'id': String(new Date().getTime())
+}
+};
+ 
+geojson.features.push(point);
+}
+ 
+if (geojson.features.length > 1) {
+linestring.geometry.coordinates = geojson.features.map(
+(point) => point.geometry.coordinates
+);
+ 
+geojson.features.push(linestring);
+ 
+// Populate the distanceContainer with total distance
+const value = document.createElement('pre');
+const distance = turf.length(linestring);
+value.textContent = `Total distance: ${distance.toLocaleString()*1000}m ${distance.toLocaleString()*1094}yards`;
+distanceContainer.appendChild(value);
+}
+ 
+map.getSource('geojson').setData(geojson);
+});
+});
+ 
+map.on('mousemove', (e) => {
+const features = map.queryRenderedFeatures(e.point, {
+layers: ['measure-points']
+});
+// Change the cursor to a pointer when hovering over a point on the map.
+// Otherwise cursor is a crosshair.
+map.getCanvas().style.cursor = features.length
+? 'pointer'
+: 'crosshair';
+});
+    });
+</script>
+</body>
+</html>
